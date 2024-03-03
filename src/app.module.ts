@@ -37,13 +37,13 @@ import { configValidationSchema } from './config.schema';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => { // function called by NestJS asynchronouslY!
         const isProduction = configService.get('STAGE') == 'prod';
-        console.log("ISProduction", isProduction);
+        // console.log("ISProduction", isProduction);
         return {
-          sslmode: isProduction ? "require" : "disable",
+          // sslmode: isProduction ? "require" : "disable",
           // ssl: isProduction ? { rejecUnauthorized: false } : null,
-          // ssl: isProduction,
+          ssl: isProduction,
           extra: {
-            ssl: isProduction ? { rejecUnauthorized: false } : null,
+            ssl: isProduction ? { rejectUnauthorized: false } : null,
           },
           // ssl: isProduction ? { rejecUnauthorized: false } : null,
           type: 'postgres',
