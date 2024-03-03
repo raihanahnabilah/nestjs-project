@@ -42,7 +42,7 @@ AppModule = __decorate([
                     return {
                         ssl: isProduction,
                         extra: {
-                            ssl: isProduction ? { rejecUnauthorized: false } : null,
+                            ssl: isProduction ? { rejectUnauthorized: false } : null,
                         },
                         type: 'postgres',
                         host: configService.get('DB_HOST'),
