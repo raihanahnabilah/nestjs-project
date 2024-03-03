@@ -12,6 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Task = void 0;
 const typeorm_1 = require("typeorm");
 const tasks_model_1 = require("./tasks.model");
+const user_entity_1 = require("../auth/user.entity");
+const class_transformer_1 = require("class-transformer");
 let Task = class Task {
 };
 __decorate([
@@ -30,6 +32,12 @@ __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Task.prototype, "status", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(_type => user_entity_1.User, user => user.tasks, { eager: false }),
+    (0, class_transformer_1.Exclude)({ toPlainOnly: true }),
+    (0, typeorm_1.JoinColumn)(),
+    __metadata("design:type", user_entity_1.User)
+], Task.prototype, "user", void 0);
 Task = __decorate([
     (0, typeorm_1.Entity)()
 ], Task);

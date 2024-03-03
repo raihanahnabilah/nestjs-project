@@ -23,21 +23,41 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
-const users_repository_1 = require("../user/users.repository");
+const users_repository_1 = require("./users.repository");
+const bcrypt = require("bcrypt");
+const jwt_1 = require("@nestjs/jwt");
 let AuthService = class AuthService {
-    constructor(userRepository) {
+    constructor(userRepository, jwtService) {
         this.userRepository = userRepository;
+        this.jwtService = jwtService;
     }
     signUp(authCredentialsDto) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.userRepository.createUser(authCredentialsDto);
         });
     }
+    signIn(authCredentialsDto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { username, password } = authCredentialsDto;
+            const user = yield this.userRepository.findOne({ where: {
+                    username: username
+                } });
+            if (user && (yield bcrypt.compare(password, user.password))) {
+                const payload = { username };
+                const accessToken = yield this.jwtService.sign(payload);
+                return { accessToken };
+            }
+            else {
+                throw new common_1.UnauthorizedException("Please check your login credentials");
+            }
+        });
+    }
 };
 AuthService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(users_repository_1.UsersRepository)),
-    __metadata("design:paramtypes", [users_repository_1.UsersRepository])
+    __metadata("design:paramtypes", [users_repository_1.UsersRepository,
+        jwt_1.JwtService])
 ], AuthService);
 exports.AuthService = AuthService;
 //# sourceMappingURL=auth.service.js.map

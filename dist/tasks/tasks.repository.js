@@ -27,28 +27,37 @@ let TasksRepository = class TasksRepository extends typeorm_1.Repository {
     constructor(dataSource) {
         super(tasks_entity_1.Task, dataSource.createEntityManager());
         this.dataSource = dataSource;
+        this.logger = new common_1.Logger('TasksRepository');
     }
-    getTasks(filterDto) {
+    getTasks(filterDto, user) {
         return __awaiter(this, void 0, void 0, function* () {
             const { status, search } = filterDto;
             const query = this.createQueryBuilder('task');
+            query.where({ user });
             if (status) {
                 query.andWhere('task.status = :status', { status });
             }
             if (search) {
-                query.andWhere('LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search)', { search: `%${search}%` });
+                query.andWhere('(LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search))', { search: `%${search}%` });
             }
-            const tasks = yield query.getMany();
-            return tasks;
+            try {
+                const tasks = yield query.getMany();
+                return tasks;
+            }
+            catch (error) {
+                this.logger.error(`Failed to get tasks for user "${user.username}. Filters: "${JSON.stringify(filterDto)}`, error.stack);
+                throw new common_1.InternalServerErrorException();
+            }
         });
     }
-    createTask(createTaskDto) {
+    createTask(createTaskDto, user) {
         return __awaiter(this, void 0, void 0, function* () {
             const { title, description } = createTaskDto;
             const task = this.create({
                 title,
                 description,
                 status: tasks_model_1.TaskStatus.OPEN,
+                user,
             });
             yield this.save(task);
             return task;

@@ -28,35 +28,35 @@ let TasksService = class TasksService {
     constructor(tasksRepository) {
         this.tasksRepository = tasksRepository;
     }
-    getTasks(filterDto) {
-        return this.tasksRepository.getTasks(filterDto);
+    getTasks(filterDto, user) {
+        return this.tasksRepository.getTasks(filterDto, user);
     }
-    getTaskById(id) {
+    getTaskById(id, user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const found = yield this.tasksRepository.findOneBy({ id });
+            const found = yield this.tasksRepository.findOne({ where: { id, user } });
             if (!found) {
                 throw new common_1.NotFoundException(`Task with ID ${id} not found`);
             }
             return found;
         });
     }
-    createTask(createTaskDto) {
+    createTask(createTaskDto, user) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.tasksRepository.createTask(createTaskDto);
+            return this.tasksRepository.createTask(createTaskDto, user);
         });
     }
-    deleteTask(id) {
+    deleteTask(id, user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield this.tasksRepository.delete(id);
+            const result = yield this.tasksRepository.delete({ id, user });
             if (result.affected === 0) {
                 throw new common_1.NotFoundException(`Task with ID ${id} not found`);
             }
         });
     }
-    updateTaskStatus(id, updateTaskDto) {
+    updateTaskStatus(id, updateTaskDto, user) {
         return __awaiter(this, void 0, void 0, function* () {
             const { status } = updateTaskDto;
-            const task = yield this.getTaskById(id);
+            const task = yield this.getTaskById(id, user);
             task.status = status;
             yield this.tasksRepository.save(task);
             return task;
