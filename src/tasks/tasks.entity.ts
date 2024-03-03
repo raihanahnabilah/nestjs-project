@@ -1,5 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TaskStatus } from './tasks.model';
+import { User } from 'src/auth/user.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class Task {
@@ -14,6 +16,11 @@ export class Task {
 
   @Column()
   status: TaskStatus;
+
+  @ManyToOne(_type => User, user => user.tasks, { eager: false }) // eager: true can only be set on one side, not the other
+  @Exclude({ toPlainOnly: true })
+  @JoinColumn()
+  user: User;
 }
 
 // Active record vs data mapper
@@ -25,3 +32,5 @@ export class Task {
 
 // Active record -> less clean, can be messy
 // DataMapper -> more clean and maintanable
+
+// Interceptor -> when a request comes in, you can either process the data, change the data and transform it 

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Task } from 'src/tasks/tasks.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity()
 // @Unique(['username'])
@@ -11,4 +12,8 @@ export class User {
 
   @Column()
   password: string;
+
+  @OneToMany(_type => Task, task => task.user, { eager: true, cascade: true }) // this is to create the one to many relation!
+  tasks: Task[];
 }
+

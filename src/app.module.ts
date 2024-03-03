@@ -5,8 +5,10 @@ import { Task } from './tasks/tasks.entity';
 import { TypeOrmExModule } from './typeorm-ex.module';
 import { TasksRepository } from './tasks/tasks.repository';
 import { AuthModule } from './auth/auth.module';
-import { User } from './user/user.entity';
+import { User } from './auth/user.entity';
 import { join } from 'path';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { configValidationSchema } from './config.schema';
 
 // Module decorator
 // Each application has at least one module -- the root module. That's the starting point of the app!
@@ -22,27 +24,41 @@ import { join } from 'path';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ 
+      envFilePath: [`.env.stage.${process.env.STAGE}`], 
+      validationSchema: configValidationSchema
+    }), // we need to wait until the configmodule is available until we can use the dependency injection in the typeorm forrootasync!
     TasksModule,
     AuthModule,
-    TypeOrmModule.forRoot({
+    TypeOrmModule.forRootAsync({ // we wanna make asynchronous module initialize bcs we dont have the values rightaway
       // for root -> for main module
       // confgiure
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'password',
-      database: 'task-management',
-      autoLoadEntities: true, // will translate to database schemas within typeorm
-      synchronize: true, // always keep database schema in sync!
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => { // function called by NestJS asynchronouslY!
+        const isProduction = configService.get('STAGE') == 'prod';
+        return {
+          ssl: isProduction,
+          extra: {
+            ssl: isProduction ? { rejecUnauthorized: false } : null,
+          },
+          type: 'postgres',
+          host: configService.get('DB_HOST'),
+          port: configService.get('DB_PORT'),
+          username: configService.get('DB_USERNAME'),
+          password: configService.get('DB_PASSWORD'),
+          database: configService.get('DB_DATABASE'),
+          autoLoadEntities: true, // will translate to database schemas within typeorm
+          synchronize: true, // always keep database schema in sync!
+          entities: [join(__dirname, './**/**.entity{.ts,.js}')],
+        };
+      },
       // entities: [__dirname + '../**/**/*.entity.ts'],
       // entities: [__dirname + './**/*.entity.ts'],
       // entities: [
       //   __dirname + 'dist/**/*.entity{.ts,.js}',
       //   __dirname + 'src/**/*.entity{.ts,.js}',
       // ],
-      entities: [join(__dirname, './**/**.entity{.ts,.js}')],
-
       // entities: [Task, User],
     }),
     // TypeOrmExModule.forCustomRepository([TasksRepository]),
