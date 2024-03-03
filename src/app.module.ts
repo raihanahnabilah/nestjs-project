@@ -39,10 +39,11 @@ import { configValidationSchema } from './config.schema';
         const isProduction = configService.get('STAGE') == 'prod';
         console.log("ISProduction", isProduction);
         return {
-          ssl: isProduction,
-          extra: {
-            ssl: isProduction ? { rejecUnauthorized: false } : null,
-          },
+          ssl: isProduction ? { rejecUnauthorized: false } : null,
+          // ssl: isProduction,
+          // extra: {
+          //   ssl: isProduction ? { rejecUnauthorized: false } : null,
+          // },
           type: 'postgres',
           host: configService.get('DB_HOST'),
           port: configService.get('DB_PORT'),
